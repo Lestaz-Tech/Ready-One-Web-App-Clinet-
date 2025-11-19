@@ -146,7 +146,7 @@ const AboutPage = () => {
               className="relative">
               <div className="relative h-96 rounded-2xl overflow-hidden shadow-xl">
                 <img
-                  src="=https://res.cloudinary.com/dknnzeppw/image/upload/v1763554291/WhatsApp_Image_2025-11-19_at_3.10.24_PM_txhppj.jpg"
+                  src="https://res.cloudinary.com/dknnzeppw/image/upload/v1763554291/WhatsApp_Image_2025-11-19_at_3.10.24_PM_txhppj.jpg"
                   alt="Ready One Movers team working together"
                   loading="lazy"
                   decoding="async"
