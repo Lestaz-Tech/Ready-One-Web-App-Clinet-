@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Button from '../../../components/ui/Button';
 import Icon from '../../../components/AppIcon';
-import Image from '../../../components/AppImage';
+import Image from '../../../components/Appimage';
 
 const HeroSection = () => {
   return (

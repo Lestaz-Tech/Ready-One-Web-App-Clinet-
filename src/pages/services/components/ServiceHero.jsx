@@ -1,6 +1,6 @@
 import React from 'react';
 import Icon from '../../../components/AppIcon';
-import Image from '../../../components/AppImage';
+import Image from '../../../components/Appimage';
 
 const ServiceHero = () => {
   return (

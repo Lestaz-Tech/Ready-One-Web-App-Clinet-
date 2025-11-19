@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import Icon from '../../../components/AppIcon';
-import Image from '../../../components/AppImage';
+import Image from '../../../components/Appimage';
 
 const WhyChooseUsSection = () => {
   const benefits = [
