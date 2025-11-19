@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import { supabase } from '../../../../lib/supabaseClient';
-import { useAuth } from '../../../../contexts/AuthContext';
-import Button from '../../../../components/ui/Button';
+import { supabase } from '../../../lib/supabaseClient';
+import { useAuth } from '../../../contexts/AuthContext';
+import Button from '../../../components/ui/Button';
 
 const BookingDetail = () => {
   const { id } = useParams();
