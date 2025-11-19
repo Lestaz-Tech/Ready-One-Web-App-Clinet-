@@ -1,0 +1,295 @@
+Build a modern React.js web application for Ready One Movers Kenya using TailwindCSS + Framer Motion + Firebase or any preferred authentication system.
+
+The website must include:
+
+🎨 DESIGN REQUIREMENTS
+
+Main colors: Orange (#F97316), Black, White
+
+Use gradients: Orange → Black / Orange → Dark Grey
+
+Smooth animations (fade, slide, hover)
+
+Rounded 2xl components
+
+Modern UI, responsive, clean
+
+Sticky top navbar
+
+Floating WhatsApp chat button
+
+Clean dashboard sidebar
+
+Professional icons
+
+📄 CONTENT REQUIREMENTS
+
+Use all the original moving-company content exactly as provided, including:
+
+Welcome section
+
+All service descriptions
+
+Why choose us
+
+Benefits
+
+Areas covered
+
+About us text
+
+Contact details
+
+All full content from Ready One Movers Kenya
+
+Include every paragraph and wording exactly.
+
+🔐 NEW FEATURE: USER ACCOUNT SYSTEM
+
+Add a complete client account system with:
+
+Account Creation / Sign-up Form
+
+Fields:
+
+Full name
+
+Phone number
+
+Email
+
+Password
+
+Confirm password
+
+User must be able to create an account using phone number + password.
+
+Login System
+
+Login using phone number + password
+
+“Remember me” checkbox
+
+Show password option
+
+Forgot Password
+
+Allow user to:
+
+Enter phone number or email
+
+Receive a reset link or OTP
+
+Set a new password
+
+🏠 CLIENT DASHBOARD (AFTER LOGIN)
+
+After login, user is redirected to a full Client Dashboard with:
+
+Dashboard Sidebar Menu
+
+Home / Overview
+
+Select Moving Service
+
+Booking History
+
+Support
+
+Help Center
+
+Contact Ready One Movers
+
+Make a Complaint
+
+Settings
+
+Logout
+
+Sidebar must be clean, modern, animated.
+
+📦 MOVING SERVICE BOOKING SYSTEM
+
+Create a clean booking form where the client selects:
+
+1. Type of Service Needed
+
+Options must include:
+
+House Moving
+
+Office Moving
+
+Bedsitter Moving
+
+1 Bedroom
+
+2 Bedroom
+
+3 Bedroom
+
+4 Bedroom
+
+5 Bedroom
+
+Mansionette
+
+Apartments
+
+Bungalows
+
+Long-distance moving
+
+Furniture moving
+
+Packing and unpacking
+
+Use Kenyan style home categories.
+
+2. Moving Details Form
+
+User must enter:
+
+Pick-up location (From)
+
+Destination (To)
+
+Floor number / access option
+
+Date of move
+
+Optional: Upload images of items
+
+Optional: Additional notes
+
+3. Payment Selection
+
+User can choose:
+
+Pay online (Mpesa, card, etc.)
+
+Pay cash
+
+Pay before service
+
+Pay after service
+
+4. Booking Confirmation Page
+
+Display:
+
+Service selected
+
+Price estimate
+
+Driver/Team assignment (placeholder)
+
+Payment method
+
+Client details
+
+Button: Confirm & Submit
+
+All booking requests must be saved into Booking History.
+
+📜 BOOKING HISTORY PAGE
+
+Show:
+
+All past bookings
+
+Status (Pending, Approved, Completed)
+
+Payment status
+
+Date & time
+
+Option to rebook
+
+☎️ SUPPORT & HELP CENTER
+
+Client must be able to:
+
+Submit complaints
+
+Send support tickets
+
+Read FAQs
+
+Contact support
+
+WhatsApp support button
+
+⚛️ REACT STRUCTURE
+
+Generate using:
+
+Main Pages
+
+Home
+
+About
+
+Services
+
+Contact
+
+Login
+
+Sign-up
+
+Forgot Password
+
+Dashboard Pages
+
+DashboardHome
+
+SelectService
+
+BookingHistory
+
+Support
+
+Complaint
+
+UserSettings
+
+UI Components
+
+Navbar
+
+Footer
+
+Sidebar
+
+ServiceCards
+
+BookingForm
+
+PaymentOptions
+
+DashboardHeader
+
+✔️ FINAL REQUIREMENT
+
+Generate a full React.js application using:
+
+React
+
+TailwindCSS
+
+Framer Motion animations
+
+Full mobile responsiveness
+
+Authentication system
+
+Client dashboard
+
+Booking system
+
+All original Ready One Movers content included exactly as written
+
+Clean and professional UI
+
+Everything must be completely generated and functional
