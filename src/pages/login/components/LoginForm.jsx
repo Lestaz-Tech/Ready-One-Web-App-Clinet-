@@ -12,7 +12,7 @@ const LoginForm = () => {
   const { signIn } = useAuth();
 
   const [formData, setFormData] = useState({
-    phoneNumber: '',
+    email: '',
     password: '',
     rememberMe: false
   });
@@ -45,11 +45,12 @@ const LoginForm = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    // Phone number validation
-    if (!formData?.phoneNumber?.trim()) {
-      newErrors.phoneNumber = 'Phone number is required';
-    } else if (!/^(\+254|0)[0-9]{9}$/.test(formData?.phoneNumber)) {
-      newErrors.phoneNumber = 'Please enter a valid Kenyan phone number (+254XXXXXXXXX or 0XXXXXXXXX)';
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData?.email?.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!emailRegex.test(formData?.email)) {
+      newErrors.email = 'Please enter a valid email address';
     }
 
     // Password validation
@@ -70,9 +71,7 @@ const LoginForm = () => {
 
     setIsLoading(true);
     try {
-      const identifier = formData?.phoneNumber?.trim() || undefined;
-      const password = formData?.password;
-      const res = await signIn({ phone: identifier, password });
+      const res = await signIn({ email: formData?.email, password: formData?.password });
       if (res?.error) {
         setErrors({ general: res.error.message || 'Login failed' });
       } else {
@@ -123,16 +122,16 @@ const LoginForm = () => {
 
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Phone Number Input */}
+          {/* Email Input */}
           <div className="space-y-2">
             <Input
-              label="Phone Number"
-              type="tel"
-              name="phoneNumber"
-              placeholder="+254712345678"
-              value={formData?.phoneNumber}
+              label="Email Address"
+              type="email"
+              name="email"
+              placeholder="your.email@example.com"
+              value={formData?.email}
               onChange={handleInputChange}
-              error={errors?.phoneNumber}
+              error={errors?.email}
               required
               className="w-full"
             />

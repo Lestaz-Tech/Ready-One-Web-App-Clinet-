@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Input from '../../../../components/ui/Input';
 import Button from '../../../../components/ui/Button';
-import { supabase } from '../../../../lib/supabaseClient';
 import { useAuth } from '../../../../contexts/AuthContext';
 
 const BookingForm = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const [form, setForm] = useState({
     service_type: 'House Moving',
     from_location: '',
@@ -29,7 +28,7 @@ const BookingForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!user) {
+    if (!user || !session) {
       setError('You must be logged in to make a booking.');
       return;
     }
@@ -37,13 +36,11 @@ const BookingForm = () => {
     setLoading(true);
     try {
       const payload = {
-        user_id: user?.id,
         service_type: form.service_type,
         from_location: form.from_location,
         to_location: form.to_location,
         floor_number: form.floor_number,
         move_date: form.move_date ? new Date(form.move_date).toISOString() : null,
-        images: [],
         notes: form.notes,
         price_estimate: form.price_estimate ? Number(form.price_estimate) : null,
         payment_method: form.payment_method,
@@ -51,10 +48,18 @@ const BookingForm = () => {
         status: 'pending'
       };
 
-      const { data, error: insertError } = await supabase.from('bookings').insert([payload]).select();
-      if (insertError) throw insertError;
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/bookings`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
 
-      // redirect to bookings list
+      const result = await response.json();
+      if (!result.success) throw new Error(result.error || 'Failed to create booking');
+
       navigate('/dashboard/bookings');
     } catch (err) {
       setError(err.message || 'Failed to create booking');

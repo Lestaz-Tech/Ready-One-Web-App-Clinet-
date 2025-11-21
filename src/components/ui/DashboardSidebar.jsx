@@ -1,11 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Icon from '../AppIcon';
+import { api } from '../../utils/apiClient';
 
 
 const DashboardSidebar = ({ isCollapsed = false, onToggleCollapse, onLogout }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
   const location = useLocation();
+
+  // Fetch notification count
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        if (!token) return;
+
+        const data = await api.get('/api/support', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (Array.isArray(data)) {
+          const unreadCount = data.filter(n => n.status !== 'resolved').length;
+          setNotificationCount(unreadCount);
+        }
+      } catch (error) {
+        console.error('Notification count fetch error:', error);
+        console.warn('Failed to fetch notification count');
+      }
+    };
+
+    // Fetch on mount and every 30 seconds
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const navigationItems = [
     { 
@@ -36,7 +65,8 @@ const DashboardSidebar = ({ isCollapsed = false, onToggleCollapse, onLogout }) =
       label: 'Notifications', 
       path: '/dashboard/notifications', 
       icon: 'Bell',
-      description: 'All notifications'
+      description: 'All notifications',
+      badge: notificationCount
     },
     { 
       label: 'Services', 
@@ -114,12 +144,19 @@ const DashboardSidebar = ({ isCollapsed = false, onToggleCollapse, onLogout }) =
                   key={item?.path}
                   to={item?.path}
                   onClick={closeMobileMenu}
-                  className={`flex items-center space-x-3 px-3 py-3 rounded-md transition-colors duration-200 ${
+                  className={`flex items-center space-x-3 px-3 py-3 rounded-md transition-colors duration-200 relative ${
                     isActivePath(item?.path)
                       ? 'text-primary bg-accent/10' :'text-foreground hover:text-primary hover:bg-accent/5'
                   }`}
                 >
-                  <Icon name={item?.icon} size={20} />
+                  <div className="relative flex-shrink-0">
+                    <Icon name={item?.icon} size={20} />
+                    {item?.badge > 0 && (
+                      <div className="absolute -top-2 -right-2 w-5 h-5 bg-error text-white text-xs font-bold rounded-full flex items-center justify-center">
+                        {item?.badge}
+                      </div>
+                    )}
+                  </div>
                   <div className="flex flex-col">
                     <span className="text-sm font-medium">{item?.label}</span>
                     <span className="text-xs text-muted-foreground">{item?.description}</span>
@@ -181,13 +218,20 @@ const DashboardSidebar = ({ isCollapsed = false, onToggleCollapse, onLogout }) =
               <Link
                 key={item?.path}
                 to={item?.path}
-                className={`group flex items-center px-3 py-3 rounded-md text-sm font-medium transition-colors duration-200 ${
+                className={`group flex items-center px-3 py-3 rounded-md text-sm font-medium transition-colors duration-200 relative ${
                   isActivePath(item?.path)
                     ? 'text-primary bg-accent/10' :'text-foreground hover:text-primary hover:bg-accent/5'
                 } ${isCollapsed ? 'justify-center' : ''}`}
                 title={isCollapsed ? item?.label : ''}
               >
-                <Icon name={item?.icon} size={20} className="flex-shrink-0" />
+                <div className="flex-shrink-0 relative">
+                  <Icon name={item?.icon} size={20} />
+                  {item?.badge > 0 && (
+                    <div className="absolute -top-2 -right-2 w-4 h-4 bg-error text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                      {item?.badge}
+                    </div>
+                  )}
+                </div>
                 {!isCollapsed && (
                   <div className="ml-3 flex flex-col">
                     <span>{item?.label}</span>

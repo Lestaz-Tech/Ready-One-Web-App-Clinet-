@@ -40,21 +40,21 @@ const AboutPage = () => {
 
   const team = [
     {
-      name: 'John Kariuki',
-      role: 'Founder & CEO',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&q=75',
+      name: 'Kevin  O',
+      role: 'Director',
+      image: 'https://res.cloudinary.com/dknnzeppw/image/upload/v1763448322/ready-one-movers-house-moves-3_fvxqym.jpg',
       bio: 'Visionary leader with 15+ years in logistics and moving industry.'
     },
     {
-      name: 'Sarah Mwangi',
+      name: 'Charles',
       role: 'Operations Manager',
-      image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&q=75',
+      image: 'https://res.cloudinary.com/dknnzeppw/image/upload/v1763448322/ready-one-movers-house-moves-3_fvxqym.jpg',
       bio: 'Expert in fleet management and customer satisfaction.'
     },
     {
       name: 'David Ochieng',
       role: 'Head of Customer Service',
-      image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&q=75',
+      image: 'https://res.cloudinary.com/dknnzeppw/image/upload/v1763448322/ready-one-movers-house-moves-3_fvxqym.jpg',
       bio: 'Dedicated to ensuring every customer has an exceptional experience.'
     }
   ];
@@ -146,7 +146,7 @@ const AboutPage = () => {
               className="relative">
               <div className="relative h-96 rounded-2xl overflow-hidden shadow-xl">
                 <img
-                  src="=https://res.cloudinary.com/dknnzeppw/image/upload/v1763554291/WhatsApp_Image_2025-11-19_at_3.10.24_PM_txhppj.jpg"
+                  src="https://res.cloudinary.com/dknnzeppw/image/upload/v1763554291/WhatsApp_Image_2025-11-19_at_3.10.24_PM_txhppj.jpg"
                   alt="Ready One Movers team working together"
                   loading="lazy"
                   decoding="async"

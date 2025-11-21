@@ -1,120 +1,125 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '../../../contexts/AuthContext';
 import Icon from '../../../components/AppIcon';
-import Button from '../../../components/ui/Button';
 
-const RecentActivity = () => {
-  const activities = [
-    {
-      id: 1,
-      type: "booking_created",
-      title: "New Booking Created",
-      description: "3-bedroom house move from Westlands to Karen",
-      date: "2025-11-16",
-      time: "14:30",
-      status: "pending",
-      icon: "Calendar",
-      color: "warning"
-    },
-    {
-      id: 2,
-      type: "booking_completed",
-      title: "Move Completed",
-      description: "Office relocation from CBD to Kilimani",
-      date: "2025-11-15",
-      time: "16:45",
-      status: "completed",
-      icon: "CheckCircle",
-      color: "success"
-    },
-    {
-      id: 3,
-      type: "payment_received",
-      title: "Payment Confirmed",
-      description: "Mpesa payment of KES 25,000 received",
-      date: "2025-11-14",
-      time: "10:20",
-      status: "completed",
-      icon: "CreditCard",
-      color: "primary"
-    },
-    {
-      id: 4,
-      type: "support_ticket",
-      title: "Support Ticket Resolved",
-      description: "Query about packing materials answered",
-      date: "2025-11-13",
-      time: "09:15",
-      status: "resolved",
-      icon: "MessageCircle",
-      color: "secondary"
-    }
-  ];
+const RecentActivity = ({ onViewBooking }) => {
+  const { session } = useAuth();
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBookings = async () => {
+      if (!session) return;
+      setLoading(true);
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/bookings`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+          // Show last 5 bookings in table
+          setBookings(result.data.slice(0, 5));
+        }
+      } catch (error) {
+        console.warn('Failed to load bookings', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, [session]);
 
   const getStatusBadge = (status) => {
     const statusClasses = {
       pending: "bg-warning/10 text-warning border-warning/20",
+      confirmed: "bg-primary/10 text-primary border-primary/20",
+      in_progress: "bg-primary/10 text-primary border-primary/20",
       completed: "bg-success/10 text-success border-success/20",
-      resolved: "bg-secondary/10 text-secondary border-secondary/20"
+      cancelled: "bg-error/10 text-error border-error/20"
+    };
+
+    const statusLabels = {
+      pending: "Pending",
+      confirmed: "Confirmed",
+      in_progress: "In Progress",
+      completed: "Completed",
+      cancelled: "Cancelled"
     };
 
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium border ${statusClasses?.[status]}`}>
-        {status?.charAt(0)?.toUpperCase() + status?.slice(1)}
+      <span className={`px-2 py-1 rounded-full text-xs font-medium border ${statusClasses?.[status] || statusClasses.pending}`}>
+        {statusLabels?.[status] || status?.charAt(0)?.toUpperCase() + status?.slice(1)}
       </span>
     );
   };
 
-  const getIconColor = (color) => {
-    const colors = {
-      primary: "text-primary",
-      success: "text-success",
-      warning: "text-warning",
-      secondary: "text-secondary"
-    };
-    return colors?.[color] || "text-muted-foreground";
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      year: 'numeric'
+    });
   };
 
   return (
     <div className="bg-card border border-border rounded-2xl p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-foreground">Recent Activity</h2>
-        <Button variant="outline" size="sm" iconName="ExternalLink" iconPosition="right">
-          View All
-        </Button>
+        <h2 className="text-lg font-bold text-foreground">Recent Bookings</h2>
+        <a href="/dashboard/bookings" className="text-primary hover:text-primary/80 text-sm font-medium">
+          View All →
+        </a>
       </div>
-      <div className="space-y-4">
-        {activities?.map((activity) => (
-          <div key={activity?.id} className="flex items-start space-x-4 p-4 rounded-xl hover:bg-muted/50 transition-colors duration-200">
-            <div className={`p-2 rounded-lg bg-muted ${getIconColor(activity?.color)}`}>
-              <Icon name={activity?.icon} size={20} />
-            </div>
-            
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between mb-1">
-                <h3 className="text-sm font-semibold text-foreground truncate">
-                  {activity?.title}
-                </h3>
-                {getStatusBadge(activity?.status)}
-              </div>
-              
-              <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                {activity?.description}
-              </p>
-              
-              <div className="flex items-center space-x-4 text-xs text-muted-foreground">
-                <div className="flex items-center space-x-1">
-                  <Icon name="Calendar" size={12} />
-                  <span>{activity?.date}</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Icon name="Clock" size={12} />
-                  <span>{activity?.time}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+
+      {loading ? (
+        <div className="text-center py-8 text-muted-foreground text-sm">Loading bookings...</div>
+      ) : bookings.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left py-3 px-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Service</th>
+                <th className="text-left py-3 px-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Location</th>
+                <th className="text-left py-3 px-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Date</th>
+                <th className="text-left py-3 px-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Status</th>
+                <th className="text-center py-3 px-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bookings.map((booking) => (
+                <tr key={booking.id} className="border-b border-border hover:bg-muted/50 transition-colors">
+                  <td className="py-3 px-3 text-foreground font-medium">{booking.service_type}</td>
+                  <td className="py-3 px-3 text-muted-foreground text-xs">
+                    <div className="truncate max-w-xs">{booking.from_location}</div>
+                  </td>
+                  <td className="py-3 px-3 text-muted-foreground text-xs">
+                    {formatDate(booking.booking_date || booking.created_at)}
+                  </td>
+                  <td className="py-3 px-3">
+                    {getStatusBadge(booking.status)}
+                  </td>
+                  <td className="py-3 px-3 text-center">
+                    <button
+                      onClick={() => onViewBooking(booking)}
+                      className="inline-flex items-center justify-center p-2 rounded-lg hover:bg-primary/10 text-primary hover:text-primary/80 transition-colors"
+                      title="View booking details"
+                    >
+                      <Icon name="Eye" size={18} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="text-center py-8 text-muted-foreground text-sm">
+          No bookings yet. <a href="/dashboard/services" className="text-primary hover:text-primary/80 font-medium">Create your first booking</a>
+        </div>
+      )}
     </div>
   );
 };

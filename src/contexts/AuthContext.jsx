@@ -3,22 +3,31 @@ import { supabase } from '../lib/supabaseClient';
 
 const AuthContext = createContext();
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Get initial session
-    const session = supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data?.session ?? null);
       setUser(data?.session?.user ?? null);
       setLoading(false);
     }).catch(() => setLoading(false));
 
     // Subscribe to changes
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
+      setUser(newSession?.user ?? null);
       setLoading(false);
     });
 
@@ -27,58 +36,111 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  const signUp = async ({ phone, email, password, fullName }) => {
-    // Prefer phone-based signup if phone provided (OTP) otherwise email
-    if (phone) {
-      // sign up using phone OTP - requires Supabase to have phone signups enabled
-      const response = await supabase.auth.signUp({ phone, password, options: { data: { full_name: fullName, email } } });
-      return response;
+  const refreshUser = async () => {
+    try {
+      const { data, error } = await supabase.auth.refreshSession();
+      if (error) throw error;
+      
+      if (data?.session) {
+        setSession(data.session);
+        setUser(data.session.user);
+        return data.session.user;
+      }
+    } catch (error) {
+      console.error('Error refreshing user:', error);
+      return null;
     }
-    const response = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName, phone } } });
-    return response;
+  };
+
+  const signUp = async ({ phone, email, password, fullName }) => {
+    try {
+      // For phone-based signup, use email + password (Supabase doesn't support pure phone signup with password)
+      // Phone will be stored in user metadata
+      if (phone && !email) {
+        // If only phone provided, derive an email or use phone@ready-one.local
+        const derivedEmail = `${phone}@ready-one.local`;
+        const response = await supabase.auth.signUp({
+          email: derivedEmail,
+          password,
+          options: {
+            data: {
+              full_name: fullName,
+              phone
+            }
+          }
+        });
+        return response;
+      }
+
+      // Standard email + password signup
+      const response = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            phone
+          }
+        }
+      });
+      return response;
+    } catch (error) {
+      return { data: null, error };
+    }
   };
 
   const signIn = async ({ phone, email, password }) => {
-    // Dev-only shortcut: allow quick local dev login using phone+password both set to 0798940935
-    // This is explicitly gated to non-production environments.
-    if (process.env.NODE_ENV !== 'production' && phone === '0798940935' && password === '0798940935') {
-      const devUser = {
-        id: 'dev-user',
-        phone,
-        email: email || null,
-        user_metadata: { full_name: 'Dev User' }
-      };
-      setUser(devUser);
-      return { data: { user: devUser }, error: null };
-    }
+    try {
+      // Dev-only shortcut: allow quick local dev login using email 'dev@ready-one.local' + password 'dev'
+      if (process.env.NODE_ENV !== 'production' && email === 'dev@ready-one.local' && password === 'dev') {
+        const devUser = {
+          id: 'dev-user-' + Date.now(),
+          email,
+          user_metadata: { full_name: 'Dev User' }
+        };
+        setUser(devUser);
+        setSession({ user: devUser, access_token: 'dev-token' });
+        return { data: { user: devUser, session: { user: devUser, access_token: 'dev-token' } }, error: null };
+      }
 
-    // sign in with password - supabase supports email+password and phone+password
-    if (phone) {
-      return supabase.auth.signInWithPassword({ phone, password });
+      // Sign in with email+password
+      const response = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      return response;
+    } catch (error) {
+      return { data: null, error };
     }
-    return supabase.auth.signInWithPassword({ email, password });
   };
 
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    setSession(null);
   };
 
   const sendReset = async ({ email, phone }) => {
-    if (phone) {
-      // Send OTP for phone sign-in (passwordless) — this behavior depends on your Supabase settings
-      return supabase.auth.signInWithOtp({ phone });
+    try {
+      if (phone && !email) {
+        email = `${phone}@ready-one.local`;
+      }
+      return supabase.auth.resetPasswordForEmail(email);
+    } catch (error) {
+      return { data: null, error };
     }
-    return supabase.auth.resetPasswordForEmail(email);
   };
 
   const value = {
     user,
+    session,
     loading,
     signUp,
     signIn,
     signOut,
-    sendReset
+    sendReset,
+    refreshUser
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
