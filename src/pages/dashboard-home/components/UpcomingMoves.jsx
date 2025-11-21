@@ -1,38 +1,69 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { useAuth } from '../../../contexts/AuthContext';
+import { api } from '../../../utils/apiClient';
 
 const UpcomingMoves = () => {
-  const upcomingMoves = [
-    {
-      id: 1,
-      type: "House Moving",
-      category: "3-Bedroom Apartment",
-      from: "Westlands, Nairobi",
-      to: "Karen, Nairobi",
-      date: "2025-11-20",
-      time: "08:00",
-      status: "confirmed",
-      daysLeft: 3,
-      estimatedCost: "KES 35,000",
-      teamAssigned: "Team Alpha",
-      specialInstructions: "Fragile items - handle with care"
-    },
-    {
-      id: 2,
-      type: "Office Moving",
-      category: "Small Office",
-      from: "CBD, Nairobi",
-      to: "Kilimani, Nairobi",
-      date: "2025-11-25",
-      time: "09:30",
-      status: "pending_confirmation",
-      daysLeft: 8,
-      estimatedCost: "KES 28,000",
-      teamAssigned: "Team Beta",
-      specialInstructions: "IT equipment requires special handling"
-    }
-  ];
+  const navigate = useNavigate();
+  const { session, user } = useAuth();
+  const [upcomingMoves, setUpcomingMoves] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadUpcomingBookings = async () => {
+      if (!user || !session?.access_token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const result = await api.get('/api/bookings', {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+
+        if (result.success && result.data) {
+          // Filter for pending and confirmed bookings, sort by date
+          const upcoming = result.data
+            .filter(booking => ['pending', 'confirmed', 'in_progress'].includes(booking.status))
+            .sort((a, b) => new Date(a.booking_date) - new Date(b.booking_date))
+            .slice(0, 5)
+            .map(booking => {
+              const bookingDate = new Date(booking.booking_date);
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const daysLeft = Math.ceil((bookingDate - today) / (1000 * 60 * 60 * 24));
+
+              return {
+                id: booking.id,
+                type: booking.service_type || "Moving Service",
+                category: booking.service_type,
+                from: booking.from_location,
+                to: booking.to_location,
+                date: booking.booking_date,
+                time: "08:00",
+                status: booking.status === 'pending' ? 'pending_confirmation' : booking.status,
+                daysLeft: Math.max(0, daysLeft),
+                estimatedCost: booking.estimated_cost ? `KES ${booking.estimated_cost.toLocaleString()}` : "N/A",
+                teamAssigned: booking.status === 'pending' ? "Not assigned yet" : "Team Assigned",
+                specialInstructions: booking.special_instructions
+              };
+            });
+
+          setUpcomingMoves(upcoming);
+        }
+      } catch (error) {
+        console.error('Failed to load upcoming bookings:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUpcomingBookings();
+  }, [user, session]);
 
   const getStatusBadge = (status) => {
     const statusConfig = {
@@ -75,18 +106,34 @@ const UpcomingMoves = () => {
     <div className="bg-card border border-border rounded-2xl p-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-foreground">Upcoming Moves</h2>
-        <Button variant="outline" size="sm" iconName="Plus" iconPosition="left">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          iconName="Plus" 
+          iconPosition="left"
+          onClick={() => navigate('/dashboard/select-service')}
+        >
           New Booking
         </Button>
       </div>
-      {upcomingMoves?.length === 0 ? (
+      {loading ? (
+        <div className="text-center py-8">
+          <div className="w-12 h-12 rounded-full border-4 border-primary border-t-transparent animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading your bookings...</p>
+        </div>
+      ) : upcomingMoves?.length === 0 ? (
         <div className="text-center py-8">
           <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
             <Icon name="Calendar" size={32} className="text-muted-foreground" />
           </div>
           <h3 className="text-lg font-semibold text-foreground mb-2">No Upcoming Moves</h3>
           <p className="text-muted-foreground mb-4">You don't have any scheduled moves at the moment.</p>
-          <Button variant="default" iconName="Plus" iconPosition="left">
+          <Button 
+            variant="default" 
+            iconName="Plus" 
+            iconPosition="left"
+            onClick={() => navigate('/dashboard/select-service')}
+          >
             Schedule a Move
           </Button>
         </div>
@@ -160,14 +207,23 @@ const UpcomingMoves = () => {
 
               <div className="flex items-center justify-between pt-4 border-t border-border">
                 <div className="flex items-center space-x-2">
-                  <Button variant="outline" size="sm" iconName="MessageCircle" iconPosition="left">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    iconName="MessageCircle" 
+                    iconPosition="left"
+                    onClick={() => navigate('/dashboard/support')}
+                  >
                     Contact Team
                   </Button>
-                  <Button variant="ghost" size="sm" iconName="Edit" iconPosition="left">
-                    Modify
-                  </Button>
                 </div>
-                <Button variant="default" size="sm" iconName="Eye" iconPosition="left">
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  iconName="Eye" 
+                  iconPosition="left"
+                  onClick={() => navigate(`/dashboard/bookings/${move.id}`)}
+                >
                   View Details
                 </Button>
               </div>

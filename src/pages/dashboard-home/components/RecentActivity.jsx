@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import Icon from '../../../components/AppIcon';
 
-const RecentActivity = ({ onViewBooking }) => {
+const RecentActivity = () => {
+  const navigate = useNavigate();
   const { session } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -103,7 +105,7 @@ const RecentActivity = ({ onViewBooking }) => {
                   </td>
                   <td className="py-3 px-3 text-center">
                     <button
-                      onClick={() => onViewBooking(booking)}
+                      onClick={() => navigate(`/dashboard/bookings/${booking.id}`)}
                       className="inline-flex items-center justify-center p-2 rounded-lg hover:bg-primary/10 text-primary hover:text-primary/80 transition-colors"
                       title="View booking details"
                     >

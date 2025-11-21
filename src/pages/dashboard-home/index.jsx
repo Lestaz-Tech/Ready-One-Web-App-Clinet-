@@ -135,7 +135,7 @@ const DashboardHome = () => {
             <QuickActions />
             
             {/* Recent Activity/Bookings - Compact Table */}
-            <RecentActivity onViewBooking={setSelectedBooking} />
+            <RecentActivity />
           </div>
 
           {/* Right Column - Additional Info (if needed) */}
